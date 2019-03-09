@@ -1,0 +1,15 @@
+2019-01-09 14:32:48,673 INFO (LogAspect.java:61)- 模块名称：登录状态
+2019-01-09 14:32:48,674 INFO (LogAspect.java:62)- 操作名称：尝试登陆
+2019-01-09 14:32:48,674 INFO (LogAspect.java:63)- 操作员：yuzhang
+2019-01-09 14:32:57,927 INFO (LogAspect.java:61)- 模块名称：用户管理
+2019-01-09 14:32:57,929 INFO (LogAspect.java:62)- 操作名称：删除用户
+2019-01-09 14:32:57,929 INFO (LogAspect.java:63)- 操作员：yuzhang
+2019-01-09 14:33:00,378 INFO (LogAspect.java:61)- 模块名称：用户管理
+2019-01-09 14:33:00,379 INFO (LogAspect.java:62)- 操作名称：删除用户
+2019-01-09 14:33:00,381 INFO (LogAspect.java:63)- 操作员：yuzhang
+2019-01-09 14:33:01,937 INFO (LogAspect.java:61)- 模块名称：用户管理
+2019-01-09 14:33:01,939 INFO (LogAspect.java:62)- 操作名称：删除用户
+2019-01-09 14:33:01,939 INFO (LogAspect.java:63)- 操作员：yuzhang
+2019-01-09 14:33:03,719 INFO (LogAspect.java:61)- 模块名称：用户管理
+2019-01-09 14:33:03,720 INFO (LogAspect.java:62)- 操作名称：删除用户
+2019-01-09 14:33:03,722 INFO (LogAspect.java:63)- 操作员：yuzhang

@@ -1,0 +1,5 @@
+2019-02-18 14:08:17,852 ERROR (LogAspect.java:66)- ==前置通知异常==
+2019-02-18 14:08:17,857 ERROR (LogAspect.java:67)- 异常信息:null
+2019-02-18 14:08:23,505 INFO (LogAspect.java:61)- 模块名称：登录状态
+2019-02-18 14:08:23,512 INFO (LogAspect.java:62)- 操作名称：尝试登陆
+2019-02-18 14:08:23,527 INFO (LogAspect.java:63)- 操作员：yuzhang

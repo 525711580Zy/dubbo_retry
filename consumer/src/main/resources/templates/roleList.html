@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title></title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.css}"/>
+        <link th:href="@{/bootstrap/css/bootstrap-table.css}" rel="stylesheet" type="text/css"/>
+        <link th:href="@{/bootstrap/css/bootstrap-switch.css}" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" th:href="@{/ui/css/upload.css}"/>
+        <script th:src="@{/ui/js/vendor/jquery.min.js}" type="text/javascript"></script>
+        <script th:src="@{/bootstrap/js/bootstrap-switch.min.js}"></script>
+        <script th:src="@{/bootstrap/js/bootstrap-table.js}"></script>
+        <script th:src="@{/bootstrap/js/bootstrap.js}"></script>
+        <script th:src="@{/bootstrap/js/bootstrap-table-zh-CN.js}"></script>
+        <script th:src="@{/ui/role.js}" type="text/javascript"></script>
+
+    <script>
+            $(function () {
+                $("#errorMsg").hide();
+                $("#errorDialog").hide();
+                $("#errorMsgSaveOrUpdate").hide();
+                var t = $("#table_server").bootstrapTable({
+                    url: '/main/getRolePage',
+                    method: 'get',
+                    dataType: "json",
+                    striped: true,//设置为 true 会有隔行变色效果
+                    undefinedText: "空",//当数据为 undefined 时显示的字符
+                    pagination: true, //分页
+                    // paginationLoop:true,//设置为 true 启用分页条无限循环的功能。
+                    showToggle: "true",//是否显示 切换试图（table/card）按钮
+                    showColumns: "true",//是否显示 内容列下拉框
+                    pageNumber: 1,//如果设置了分页，首页页码
+                    // showPaginationSwitch:true,//是否显示 数据条数选择框
+                    pageSize: 3,//如果设置了分页，页面数据条数
+                    pageList: [3, 6, 9, 12],	//如果设置了分页，设置可供选择的页面数据条数。设置为All 则显示所有记录。
+                    paginationPreText: '‹',//指定分页条中上一页按钮的图标或文字,这里是<
+                    paginationNextText: '›',//指定分页条中下一页按钮的图标或文字,这里是>
+                    // singleSelect: false,//设置True 将禁止多选
+                    search: false, //显示搜索框
+                    data_local: "zh-US",//表格汉化
+                    sidePagination: "server", //服务端处理分页
+                    queryParams: function (params) {//自定义参数，这里的参数是传给后台的，我这是是分页用的
+                        console.log(params);
+                        return {//这里的params是table提供的
+                            cp: params.offset,//从数据库第几条记录开始
+                            ps: params.limit//找多少条
+                        };
+                    },
+                    idField: "id",//指定主键列
+                    columns: [
+                        {
+                            title: '#',//表的列名
+                            field: 'id',//json数据中rows数组中的属性名
+                            align: 'center'//水平居中
+                        },
+                        {
+                            title: '角色编码',
+                            field: 'role',
+                            align: 'center'
+                        },
+                        {
+                            title: '角色名称',
+                            field: 'name',
+                            align: 'center'
+                        },
+                        {
+                            //EMAIL
+                            title: '角色描述',
+                            field: 'description',
+                            align: 'center'
+                        },
+                        {
+                            title: '操作',
+                            field: 'userId',
+                            align: 'center',
+                            formatter: function (value, row, index) {//自定义显示可以写标签哦~2
+                                var json=JSON.stringify(row);
+                                var url="/main/removeRole";
+                                return ["<button type='button' class='btn btn-default' style='color: red' onclick='showModify("+json+")'>编辑</button>&nbsp;&nbsp;",
+                                    // "<button type='button' class='btn btn-default' style='color: red' onclick='showModify("+json+")'>编辑</button>&nbsp;&nbsp;",
+                                    '<button type="button" id="btnDel" class="btn btn-default" style="color: green" onclick="openPrivilege('+row.id+')">分配权限</button>&nbsp;&nbsp;',
+                                    "<button type='button' id='btnDel' class='btn btn-default' style='color: green' onclick='removeById(\""+url+"\","+row.id+")'>删除</button>"].join('');
+                            },
+                        }
+                    ]
+                });
+                t.on('load-success.bs.table', function (data) {//table加载成功后的监听函数
+                    $(".pull-right").css("display", "block");
+                });
+            });
+            function submitForm(obj,url,flag) {
+
+                var formdata=new FormData(obj[0]);
+                alert(formdata)
+                //获取表单数据
+                    //发送请求
+                    $.ajax({
+                        //接口地址
+                        url:url,
+                        type:'POST',
+                        data:formdata,
+                        async:false,
+                        cache:false,
+                        contentType:false,
+                        processData:false,
+                        success:function (data) {
+                            if(flag){
+                                //成功的回调
+                                alert("修改成功")
+                            }else{
+                                //新增成功后，刷新bootstrap
+                                // alert("我要刷新当前界面啦")
+                                alert("添加成功！");
+                            }
+                            $("#table_server").bootstrapTable('refresh');
+                        },error:function (returndata) {
+                            //请求异常的回调
+                            $("#errorMsg").text("网络环境异常，请稍后再试");
+                            $("#errorMsg").show();
+                            return;
+                        }
+                    })
+            }
+            function showModify(json){
+                //这个是添加用户
+                if(!json){
+                    alert("进入添加的");
+                    $("[name=id]").attr("disabled",true);
+                    $(".modal-title").text("添加角色");
+                    $("#myModal").modal('toggle');
+
+                    getRoleList();
+                }else{
+                    alert("进入修改的")
+                    $("[name=id]").attr("disabled",false);
+                    $(".modal-title").text("编辑角色")
+                    $("#myModal").modal('toggle');
+
+                    $("[name='id']").val(json.id)
+                    $("[name='name']").val(json.name)
+                    $("[name='role']").val(json.role)
+                    $("[name='description']").val(json.description)
+                    //角色自选定
+                    getRoleList();
+                }
+            }
+            function reset () {
+               $("input[type=reset]").trigger("click");
+            }
+            function removeById(url,roleId) {
+                $("[name=id]").attr("disabled",false);
+                $.post(url,{"id":roleId},function (data) {
+                    var flag = eval(data)
+                    if(flag){
+                        //删除bootstrap的记录
+                        $("#table_server").bootstrapTable('remove',{
+                            field:'id',
+                            values:[parseInt(roleId)]
+                        })
+                        $("#table_server").bootstrapTable('refresh');
+                    }else{
+                        $("#errorDialog>span").text("网络原因，删除失败").show();
+                    }
+                })
+            }
+            function openPrivilege(roleId) {
+                $("#roleid").val(roleId);
+                $(".modal-title").text("赋予权限")
+                $("#givePrivilege").modal().toggle();
+                $.getJSON("/main/getMenus",function (json) {
+                    var htmls=[];
+                    $.each(json,function (i,item) {
+                        htmls[i]='<input type="checkbox" lang="'+item.id+'" value="'+item.id+'" name="status"/>&nbsp;&nbsp;&nbsp;&nbsp;'+item.name+'<br/>';
+                })
+                    $("#menus").html(htmls);
+                })
+                //查询出某个角色的权限并且给对应权限打钩
+                $.getJSON("/main/getMenusByRole",{roleid:roleId},function (json) {
+                    $("#roleid").attr("disabled",false);
+                    alert("本次的权限id和name"+json)
+                    $.each(json,function (i,item) {
+                        var id = item.id;
+                        $("[name='status']").each(function (j,menu) {
+                            if(menu.val()==id){
+                                $('menu').prop("checked",true);
+                            }else{
+                                $('menu').prop("checked",false);
+                            }
+                        })
+                        // $('[lang=\"'+item.id+'\"]').attr('checked');
+                        //妈的 设置自动被选中 好难 已经从后台拿到了menus集合，包含id和name 就是特么的不能按id标签选中状态
+                        $("input[type=checkbox][name=status][value=id]").attr("checked",'checked');
+                    })
+                })
+            }
+            /*function openPrivilege(id) {
+                $('[name=status]').prop("checked",false);//默认情况下，设置可选状态为false
+                alert("进入了赋予权限的ajax")
+                $("#givePrivilege").modal().toggle();
+                //获取权限
+                $.ajax({
+                    url:"/main/getMenusByRole",
+                    async:false,
+                    type:"post",
+                    dataType:"json",
+                    data:{'roleid':id},
+                    success:function (data) {
+                        $.each(data,function (i,item) {
+                            var checks=$('[name="status"]');
+                            for(var id in checks){
+                                if(checks[i].nodeType==1){
+                                    var id=checks[i].value;
+                                    if(item[0]==id){
+                                        $(checks[i].prop("checked",true));
+                                    }
+                                }
+                            }
+                        })
+                    }
+                });
+                $("#roleid").val(id);
+
+            }*/
+    </script>
+</head>
+<body>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <button class="btn btn-primary btn-lg" onclick="showModify(undefined)">添加角色</button>
+            <table id="table_server" ></table>
+        </div>
+
+        <div class="alert alert-danger alert-dismissible" align="center" id="errorDialog">
+            <button type="button" class="close"  data-dismiss="alert">&times;</button>
+            <strong>错误!</strong><span></span>
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" onclick="reset()" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" id="saveOrUpdate">
+                        <input type="hidden" class="form-control" id="id" name="id">
+                        <div class="form-group">
+                            <label for="role">角色编码</label>
+                            <input type="text" class="form-control" id="role" name="role" placeholder="请输入角色代码" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">角色名称</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="请输入角色名称" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">角色描述</label>
+                            <input type="text" class="form-control" id="description" name="description" placeholder="请输入角色描述" required>
+                        </div>
+                        <input type="reset" name="reset" style="display: none">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" onclick="reset()" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal" onclick="submitForm($('#saveOrUpdate'),'/main/addRole',false)">
+                        提交更改
+                    </button>
+                </div>
+                <div id="errorMsgSaveOrUpdate" class="alert alert-danger text-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="givePrivilege" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" onclick="reset()" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="">
+                        分配权限
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" id="privilege">
+                        <input type="hidden" id="roleid" name="id"><!--分配权限时的角色ID-->
+                        <div id="menus">
+                            <!--所有的权限-->
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" onclick="reset()" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal" onclick="submitForm($('#privilege'),'/main/addRole',false);">
+                        提交更改
+                    </button>
+                </div>
+                <div id="errorMsg" class="alert alert-danger text-center"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

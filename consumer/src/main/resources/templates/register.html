@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta name="description" content="Bootstrap Admin App + jQuery"/>
+    <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin"/>
+    <title>博客系统</title>
+    <link rel="icon" href="/img/icon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/font-awesome.min.css}"></link>
+    　　
+    <link rel="stylesheet" th:href="@{/bootstrap/css/simple-line-icons.css}"></link>
+    　　
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.css}" id="bscss"></link>
+    　　
+    <link rel="stylesheet" th:href="@{/bootstrap/css/app.css}" id="main"></link>
+    　　
+    <link rel="stylesheet" th:href="@{/bootstrap/css/theme-i.css}" id="maincss"></link>
+
+    <link rel="stylesheet" th:href="@{/ui/css/upload.css}"></link>
+    <script type="text/javascript" th:src="@{/libs/jquery-3.2.1.min.js}"></script>
+    <script>
+        $(function () {
+            $("#errorMsg").hide();
+            $(".showimg").hide();
+        })
+
+        function upLoad(){
+            var fileInput = document.getElementById("upimg");
+            var file = fileInput.files[0];
+            //创建读取文件的对象
+            var reader = new FileReader();
+            //创建文件读取相关的变量
+            var imgFile;
+            //为文件读取成功设置事件
+            reader.onload = function (e) {
+                // alert('文件读取完成');
+                imgFile = e.target.result;
+                $(".showimg").show();
+                $("#img").attr('src', imgFile);//imgFile对象是流文件
+            };
+            //正式读取文件
+            reader.readAsDataURL(file);
+        }
+        function submitForm() {
+            //获取表单数据
+            var formData = new FormData($("#form")[0]);
+            //判断是否设置了头像，获取id=img的标签的src属性值
+            var src = $("#img").attr('src');
+            //对src属性值进行判断
+            if(src==''){
+                //展示文件上传的错误信息
+                $("#errorMsg").text("请上传文件");
+                $("#errorMsg").show();
+                return;
+            }else{
+                //有图片，发送ajax请求
+                $.ajax({
+                    //controller地址
+                    url: '/register/registerAjax',
+                    type:'POST',
+                    data:formData,
+                    async:false, //这两行代码干嘛的,
+                    cache:false,
+                    contentType:false,//告诉jquery不要处理发送数据
+                    processData:false,//不去设置请求头
+                    success:function (data) {
+                        //成功回调,跳转到登录界面
+                        location.href="/register/jumpToLogin";
+                    },
+                    error:function (data) {
+                        $("#errorMsg").text("网络环境异常，请稍后重新注册");
+                        $("#errorMsg").show();
+                        return;
+                    }
+                    })
+            }
+        }
+    </script>
+
+
+</head>
+<body>
+<div class="wrapper">
+    <div class="block-center mt-xl wd-xl">
+        <div class="panel panel-dark panel-flat">
+            <div class="panel-heading text-center">
+                <a href="#">
+                    <img th:src="@{/ui/user/sjdf.png}" alt="Image" class="block-center img-rounded" width="100"
+                         height="50"/></a>
+            </div>
+            <div class="panel-body" id="registPage">
+                <p class="text-center pv">快速注册新用户</p>
+                <form id="form" data-parsley-validate="true" onsubmit="return false">
+                    <div class="form-group has-feedback">
+                        <label class="text-muted">登录邮箱</label>
+                        <input name="email" type="email" placeholder="输入邮箱地址" class="form-control" v-model="email"
+                               data-parsley-required-message="请输入邮箱地址" data-parsley-type-message="请输入正确的邮箱地址"
+                               required="required"/>
+                        <span class="fa fa-envelope form-control-feedback text-muted"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label class="text-muted">登录名称</label>
+                        <input name="login_name" type="text" placeholder="我们该如何称呼您？" class="form-control"
+                               v-model="userName" data-parsley-required-message="请输入登录名称" required="required"/>
+                        <span class="fa fa-user form-control-feedback text-muted"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label class="text-muted">真实名称</label>
+                        <input name="name" type="text" placeholder="您叫什么？" class="form-control" v-model="userName"
+                               data-parsley-required-message="请输入真实姓名" required="required"/>
+                        <span class="fa fa-user form-control-feedback text-muted"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label class="text-muted">密码</label>
+                        <input name="password" type="password" placeholder="密码" class="form-control" v-model="password"
+                               required="required" data-parsley-required-message="请输入密码"/>
+                        <span class="fa fa-lock form-control-feedback text-muted"></span>
+                    </div>
+
+                    <div class="yg_content">
+                        <input type="file" id="upimg" name="upload" accept="image/*" onchange="upLoad()"/>
+                        <label for="upimg">
+                            <p>点击上传图片</p>
+                        </label>
+                        <div class="showimg">
+                            <img id="img" src="" alt=""/>
+                        </div>
+                    </div>
+                    <button onclick="submitForm()" class="btn btn-block btn-primary mt-lg">创建账户</button>
+                </form>
+                <p></p>
+                <div id="errorMsg" class="alert alert-danger text-center"></div>
+                <p class="pt-lg text-center">已经有账户？</p>
+                <a href="/hello/toLogin" class="btn btn-block btn-default">登录</a>
+            </div>
+        </div>
+        <div class="p-lg text-center">
+            <span>&copy;</span>
+            <span>2016</span>
+            <span>-</span>
+            <span>2018</span>
+            <br/>
+            <span>cmyqqc@163.com</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

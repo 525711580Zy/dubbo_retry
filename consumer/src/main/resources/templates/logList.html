@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.css}"/>
+    <link th:href="@{/bootstrap/css/bootstrap-table.css}" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/ui/css/upload.css}"/>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap-datetimepicker.css}"/>
+    <script th:src="@{/ui/js/vendor/jquery.min.js}" type="text/javascript"></script>
+    <script th:src="@{/bootstrap/js/bootstrap-table.js}"></script>
+    <script th:src="@{/bootstrap/js/bootstrap.js}"></script>
+    <script th:src="@{/bootstrap/js/bootstrap-table-zh-CN.js}"></script>
+    <script type="text/javascript" th:src="@{/ui/common.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap-datetimepicker.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <script th:src="@{/ui/role.js}" type="text/javascript"></script>
+    <script>
+        function changeDateFormat(cellval) {
+            var dateVal = cellval + "";
+            if (cellval != null) {
+                var date = new Date(parseInt(dateVal.replace("/Date(", "").replace(")/", ""), 10));
+                var month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
+                var currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+
+                var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+                var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+                var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+                return date.getFullYear() + "-" + month + "-" + currentDate + " " + hours + ":" + minutes + ":" + seconds;
+            }
+        }
+            function search(){
+                $("#table_server").bootstrapTable('refresh');
+            }
+            $(function () {
+                load();
+            });
+
+            function load() {
+                var t = $("#table_server").bootstrapTable({
+                    url: '/log/getLogDetail',
+                    method: 'get',
+                    dataType: "json",
+                    striped: true,//设置为 true 会有隔行变色效果
+                    undefinedText: "空",//当数据为 undefined 时显示的字符
+                    pagination: true, //分页
+                    // paginationLoop:true,//设置为 true 启用分页条无限循环的功能。
+                    showToggle: "true",//是否显示 切换试图（table/card）按钮
+                    showColumns: "true",//是否显示 内容列下拉框
+                    pageNumber: 1,//如果设置了分页，首页页码
+                    // showPaginationSwitch:true,//是否显示 数据条数选择框
+                    pageSize: 5,//如果设置了分页，页面数据条数
+                    pageList: [5, 10, 15],	//如果设置了分页，设置可供选择的页面数据条数。设置为All 则显示所有记录。
+                    paginationPreText: '‹',//指定分页条中上一页按钮的图标或文字,这里是<
+                    paginationNextText: '›',//指定分页条中下一页按钮的图标或文字,这里是>
+                    // singleSelect: false,//设置True 将禁止多选
+                    search: false, //显示搜索框
+                    data_local: "zh-US",//表格汉化
+                    sidePagination: "server", //服务端处理分页
+                    queryParams: function (params) {//自定义参数，这里的参数是传给后台的，我这是是分页用的
+                        return {//这里的params是table提供的
+                            cp: params.offset,//从数据库第几条记录开始
+                            ps: params.limit,//找多少条
+                            userName:$("#userName").val(),
+                            begin:$("#begin").val(),
+                            end:$("#end").val(),
+                        };
+                    },
+                    idField: "logid",//指定主键列
+                    columns: [
+                        {
+                            title: '#',//表的列名
+                            field: 'logid',//json数据中rows数组中的属性名
+                            align: 'center'//水平居中
+                        },
+                        {
+                            title: '操作日期',
+                            field: 'modify',
+                            align: 'center',
+                            formatter: function (value, row, index) {
+                                return changeDateFormat(value)
+                            }
+                        },
+                        {
+                            title: '模块名称',
+                            field: 'title',
+                            align: 'center'
+                        },
+                        {
+                            //EMAIL
+                            title: '操作',
+                            field: 'action',
+                            align: 'center'
+                        },
+                        {
+                            //部门名字
+                            title: '用户名称',
+                            field: 'username',//可以直接取到属性里面的属性，赞
+                            align: 'center',
+
+                        },
+                    ]
+                });
+                t.on('load-success.bs.table', function (data) {//table加载成功后的监听函数
+                    console.log(data);
+                    $(".pull-right").css("display", "block");
+                });
+            }
+            
+            function search() {
+                $("#table_server").bootstrapTable('refresh');
+            }
+    </script>
+</head>
+<body>
+    <div class="panel panel-default">
+            <div class="panel-body">
+                    起始时间:<input size="16" type="text" value="" readonly class="mydate" id="begin" placeholder="请选择日期" required>&nbsp;&nbsp;&nbsp;
+                    截止时间:<input size="16" type="text" value="" readonly class="mydate" id="end" placeholder="请选择日期" required>&nbsp;&nbsp;&nbsp;
+                    操作人:<input type="text" id="userName" placeholder="请输入姓名" required>&nbsp;&nbsp;&nbsp;
+                    <script type="text/javascript">
+                        $(".mydate").datetimepicker({
+                            format: "yyyy/mm/dd hh:ii",
+                            todayBtn: true,
+                            language:'zh-CN',
+                            pickerPosition:"bottom-right"
+                        });
+                    </script>
+                    <button class="btn btn-primary btn-lg" onclick="search()">搜索</button>
+            <table id="table_server"></table>
+        </div>
+    </div>
+</body>
+</html>
